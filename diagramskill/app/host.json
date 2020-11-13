@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "extensions": {
+    "http": {
+        "routePrefix": "api",
+        "maxOutstandingRequests": 400,
+        "maxConcurrentRequests": 200,
+        "dynamicThrottlesEnabled": true,
+        "hsts": {
+            "isEnabled": true,
+            "maxAge": "10"
+        },
+        "customHeaders": {
+            "X-Content-Type-Options": "nosniff"
+        }
+    }
+},
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[1.*, 2.0.0)"
+  }
+}
