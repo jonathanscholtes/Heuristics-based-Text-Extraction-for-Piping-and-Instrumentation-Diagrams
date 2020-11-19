@@ -42,12 +42,20 @@ class PidImage(ImageBase):
         image_string_b = image_bytes_str.encode(encoding)       
         image_bytes = base64.b64decode(image_string_b)
         logging.info("Image Bytes Len: " + str(len(image_bytes)))
+        print("Image Bytes Len: " + str(len(image_bytes)))
 
+        self.fromBytes(image_bytes)
+        logging.info("Image Read--- %s seconds ---" % (time.time() - start_time)) 
+        print("Image Read--- %s seconds ---" % (time.time() - start_time))
+        
+
+    def fromBytes(self,image_bytes):
+       
         pil_image = Image.open(BytesIO(image_bytes))
         open_cv_image = np.array(pil_image)	        
         self.image = open_cv_image[:, :, ::-1].copy() 
-        logging.info("Image Read--- %s seconds ---" % (time.time() - start_time)) 
-
+     
+        
     
 
     def createCircles(self,circles:[],buffer:int=0, size:int=110,resize:bool=True):

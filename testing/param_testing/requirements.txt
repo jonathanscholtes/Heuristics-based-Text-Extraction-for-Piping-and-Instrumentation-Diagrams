@@ -6,3 +6,4 @@ Pillow
 azure-storage-blob
 pytesseract
 datetime
+diagramprep-0.1-py3-none-any.whl

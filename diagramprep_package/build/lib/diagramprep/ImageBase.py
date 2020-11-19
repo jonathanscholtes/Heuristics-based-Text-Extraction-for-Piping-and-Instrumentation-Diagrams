@@ -13,7 +13,7 @@ class ImageBase():
     def __init__(self,image):
         self.image=image
     
-    def get_stream(self,format='JPEG'):
+    def get_stream(self,format='JPEG',debug_index:int=-1):
 
         """
         Convert CV2 Image to ByteIO Stream
@@ -25,8 +25,13 @@ class ImageBase():
         Returns:
         ByteIO Steam
         """
+        img = self.image
+
+        if debug_index > -1:
+            img = self.debugImages[debug_index]
+
         logging.info("calling get_stream")
-        pil_image2 = Image.fromarray(cv2.cvtColor(self.image,cv2.COLOR_BGR2RGB))
+        pil_image2 = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB))
         buf = BytesIO()
         pil_image2.save(buf, format=format)
         buf.seek(0)

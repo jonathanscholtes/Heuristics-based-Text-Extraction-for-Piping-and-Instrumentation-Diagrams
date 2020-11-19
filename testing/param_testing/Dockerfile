@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     software-properties-common 
 
 #poppler-utils
-
+RUN apt-get install -y libsm6 libxext6 libxrender-dev
 RUN apt-get install  curl wget -y
 RUN apt-get install python3-pip python3-venv libjpeg-dev libfreetype6 libfreetype6-dev zlib1g-dev -y
 RUN pip3 install -U pip
@@ -26,7 +26,6 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY /testing/param_testing/paramtest.py /app
 
-ENV BLOB_CONNECTION_STRING='DefaultEndpointsProtocol=https;AccountName=searchstoragejstest;AccountKey=ecPjevJLinqMRmslQPyHtAoJ9NdzOQGLz/h8kTm6YSleu65nXVR6sPe+f1KVLt01Ok9EkdPDoY2vWrEHogDwhQ==;EndpointSuffix=core.windows.net'
-ENV BLOB_CONTAINER='paramtesting'
+ENV BLOB_CONNECTION_STRING=''
+ENV BLOB_CONTAINER=''
 
-ENTRYPOINT [ "/env3/bin/python3", "-u", "./paramtest.py" ]

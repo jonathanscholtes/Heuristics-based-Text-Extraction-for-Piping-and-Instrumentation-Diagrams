@@ -3,10 +3,13 @@
 import azure.batch.batch_service_client as batch
 import azure.batch.batch_auth as batchauth
 import azure.batch.models as batchmodels
+import json
 
-creds = batchauth.SharedKeyCredentials('searchtesting', 'F9TaLHOShNOskte7D/FUYcjvmLyv0tHWZmisokT73t8d6GNNNezhK/G//8mpX/Yb4ibqA7GL5r1AryDQoYW9dA==')
-#config = batch.BatchServiceClientConfiguration(creds, base_url = 'https://searchtesting.centralus.batch.azure.com')
-client = batch.BatchServiceClient(creds,batch_url='https://searchtesting.centralus.batch.azure.com')
+with open("../../../config.json") as f:
+    config = json.load(f)
+
+creds = batchauth.SharedKeyCredentials(config["batch_service"],config["batch_connection_str"] )
+client = batch.BatchServiceClient(creds,batch_url=config["batch_url"])
 
 image_ref_to_use = batch.models.ImageReference(
         publisher='microsoft-azure-batch',
@@ -16,8 +19,8 @@ image_ref_to_use = batch.models.ImageReference(
 
 # Specify a container registry
 container_registry = batch.models.ContainerRegistry(
-        user_name="jscholtes",
-        password="dockerPa$$21")
+        user_name=config["docker_user"],
+        password=config["docker_pw"])
 
 # Create container configuration, prefetching Docker images from the container registry
 container_conf = batch.models.ContainerConfiguration(
@@ -32,7 +35,7 @@ new_pool = batch.models.PoolAddParameter(
                 container_configuration=container_conf,
                 node_agent_sku_id='batch.node.ubuntu 16.04'),
             vm_size='STANDARD_D1_V2',
-            target_dedicated_nodes=3,
-            target_low_priority_nodes=3)
+            target_dedicated_nodes=9,
+            target_low_priority_nodes=20)
 
 client.pool.add(new_pool)
