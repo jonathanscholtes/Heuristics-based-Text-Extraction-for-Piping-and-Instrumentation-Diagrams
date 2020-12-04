@@ -1,9 +1,0 @@
-scikit-image
-opencv-contrib-python==4.2.0.34  
-opencv-python==4.2.0.34 
-requests
-Pillow
-azure-storage-blob
-pytesseract
-datetime
-diagramprep-0.1-py3-none-any.whl

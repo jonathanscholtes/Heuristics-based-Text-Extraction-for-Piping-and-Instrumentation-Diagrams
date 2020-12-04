@@ -34,13 +34,15 @@ import cv2
 class PidImageProcessor():
 
     pidImage: PidImage = None
+    segment_params:dict = {}
 
     def __init__(self, pidImage: PidImage,max_hough_circles:int=500,min_hough_circles:int=1,              
-                debug:bool=False):
+                debug:bool=False,segment_params:dict={}):
         self.pidImage = pidImage
         self.debug = debug
         self.max_hough_circles = max_hough_circles
         self.min_hough_circles = min_hough_circles
+        self.segment_params = segment_params
 
 
          
