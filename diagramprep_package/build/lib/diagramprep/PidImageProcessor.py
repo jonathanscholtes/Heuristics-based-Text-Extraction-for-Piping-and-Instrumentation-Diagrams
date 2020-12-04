@@ -1,3 +1,24 @@
+############################################################################################
+#Permission is hereby granted, free of charge, to any person obtaining a copy of
+#this software and associated documentation files (the "Software"), to deal in
+#the Software without restriction, including without limitation the rights to
+#use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+#of the Software, and to permit persons to whom the Software is furnished to do
+#so, subject to the following conditions:
+
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software.
+
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
+###########################################################################################
+
+
 from .PidImage import PidImage
 from .Processor import Processor
 from .PidOcr import Ocr as ocr
@@ -13,16 +34,17 @@ import cv2
 class PidImageProcessor():
 
     pidImage: PidImage = None
+    segment_params:dict = {}
 
     def __init__(self, pidImage: PidImage,max_hough_circles:int=500,min_hough_circles:int=1,              
-                debug:bool=False):
+                debug:bool=False,segment_params:dict={}):
         self.pidImage = pidImage
         self.debug = debug
         self.max_hough_circles = max_hough_circles
         self.min_hough_circles = min_hough_circles
+        self.segment_params = segment_params
 
 
-         
     def process_image(self,
                 hough_dp:int = 3,
                 hough_minDist:int = 10,
@@ -32,9 +54,12 @@ class PidImageProcessor():
                 hough_maxRadius:int=20,
                 hough_imageSize:int=110,
                 hough_blurLevel:int=5,
+                hough_blurSigmaX:int=3,
                 hough_dilate_iter=5,
                 circle_index:int=-1,
-                ocr_image:bool=True):
+                ocr_image:bool=True,
+                prep_kernel:[]= np.ones((3,3), np.uint8),
+                kernel_sharpening=np.array([[-1,-1,-1], [-1, 15,-1],[-1,-1,-1]]) ):
       
         self.hough_dp = hough_dp
         self.hough_minDist = hough_minDist
@@ -45,6 +70,7 @@ class PidImageProcessor():
         self.hough_imageSize = hough_imageSize
         self.hough_blurLevel=hough_blurLevel
         self.hough_dilate_iter = hough_dilate_iter
+        self.hough_blurSigmaX = hough_blurSigmaX
 
         self.pidImage.debugImages = []
         self.pidImage.diagramCircles = []
@@ -60,8 +86,8 @@ class PidImageProcessor():
             print("Circles: %s" % len(self.pidImage.diagramCircles))
 
             if len(self.pidImage.diagramCircles) >0:
-                _start_time = time.time()
-                self.__prep_circles()    
+                start_time = time.time()
+                self.__prep_circles(prep_kernel,kernel_sharpening)    
                 logging.info("Matched Circle Prep--- %s seconds ---" % (time.time() - start_time))
                 print("Matched Circle Prep--- %s seconds ---" % (time.time() - start_time))
 
@@ -69,15 +95,15 @@ class PidImageProcessor():
                     self.__ocr_circles(circle_index)
         else:
             raise RuntimeError('PidImage has no Image set')
-            
 
+    
         
     def __contour_match(self):    
         orig = self.pidImage.image.copy()   
         img2 = orig.copy() 
         kernel = np.ones((2,2), np.uint8) 
 
-        img2 = cv2.GaussianBlur(img2, (self.hough_blurLevel,self.hough_blurLevel), 3)
+        img2 = cv2.GaussianBlur(img2, (self.hough_blurLevel,self.hough_blurLevel), self.hough_blurSigmaX)
         #img2 = cv2.erode(img2, kernel, iterations=5)
         img2 = cv2.dilate(img2, kernel, iterations=self.hough_dilate_iter)
         ret, img2 = cv2.threshold(img2, 220, 255, cv2.THRESH_TOZERO)
@@ -108,18 +134,18 @@ class PidImageProcessor():
     
    
 
-    def __prep_circles(self):
+    def __prep_circles(self,prep_kernel:[],kernel_sharpening:[]):
 
-        kernel = np.ones((3,3), np.uint8) 
-        kernel_sharpening=np.array([[-1,-1,-1], [-1, 15,-1],[-1,-1,-1]])
+        #kernel = np.ones((3,3), np.uint8) 
+        #kernel_sharpening=np.array([[-1,-1,-1], [-1, 15,-1],[-1,-1,-1]])
 
         logging.info("Prep-ing: {} circles".format(len(self.pidImage.diagramCircles)))
         print("Prep-ing: {} circles".format(len(self.pidImage.diagramCircles)))
         
         for dc in self.pidImage.diagramCircles:
             dc.image = self.__remove_circle_line(dc.image)
-            dc.image = cv2.dilate(dc.image, kernel, iterations=1)
-
+            dc.image = cv2.dilate(dc.image, prep_kernel, iterations=1)
+            
             ret, dc.image = cv2.threshold(dc.image, 210, 255, cv2.THRESH_TOZERO)
             dc.image = cv2.fastNlMeansDenoisingColored(dc.image,None,6,6,7,21)
             sharpened=cv2.filter2D(dc.image,-1,kernel_sharpening)

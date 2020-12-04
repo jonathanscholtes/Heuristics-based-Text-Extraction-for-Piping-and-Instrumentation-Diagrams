@@ -29,32 +29,37 @@ class TextBlockProcessor():
     original_textblocks: [] = []
     grouped_boxes: []= []
     singles: {} ={}
-    mathes: {} = {}
+    matches: {} = {}
 
-    def __init__(self, text_layout:[]):
-        self.original_textblocks = []
+    def __init__(self,text_layout:dict):
         self.grouped_boxes = []
         self.singles = {}
         self.matches = {}
-
-    def process_text(self, text_layout:[]):
         self.original_textblocks = self.__get_textblocks(text_layout)
 
+    def process_text(self, maxSegment:int=95,
+                    leftAlignSensitivity:int=5,
+                    rightAlignSensitivity:int=5,
+                    centerAlignSensitivty:int=15):
+        
         if len(self.original_textblocks) > 0:
             start_time = time.time()
-            self.__match_boxes()
-            self.__match_singles()
+            self.__match_boxes(maxSegment,leftAlignSensitivity,rightAlignSensitivity,centerAlignSensitivty)
+            #self.__match_singles()
             logging.info("Group Text--- %s seconds ---" % (time.time() - start_time))
 
         for b in self.grouped_boxes:
             b.text = self._clean_tags(b.text)
 
     def _clean_tags(self,text:str):
+        text = text.replace("\n","-") 
         text = text.replace("- ","-") 
         text = text.replace(" -","-")
 
+        return text.strip('-')
+
     def get_tags(self):
-        tags_array = [ x.text for x in self.grouped_boxes if "-"  in x.text and len(x)>1]
+        return [ x.text for x in self.grouped_boxes if "-"  in x.text]
 
 
     def get_text(self):
@@ -75,14 +80,16 @@ class TextBlockProcessor():
 
     def __get_textblocks(self,text_layout:[]):
 
+        textblocks = []
         start_time = time.time()
 
         for line in text_layout["lines"]:
             if len(line) >0:
-                self.original_textblocks.append(TextBlock(line['text'],line['boundingBox']))
+                textblocks.append(TextBlock(line['text'],line['boundingBox']))
 
         logging.info("Load Bounding Boxes--- %s seconds ---" % (time.time() - start_time))
-        logging.info("%s textblocks" % str(len(self.original_textblocks)))
+        logging.info("%s textblocks" % str(len(textblocks)))
+        return textblocks
 
 
     def __match_boxes(self,maxSegment:int=95,leftAlignSensitivity:int=5,rightAlignSensitivity:int=5,centerAlignSensitivty:int=15):
@@ -90,7 +97,7 @@ class TextBlockProcessor():
         self.matches = {}
         ids=[]
         self.singles = {}   
-        textblocks = self.original_textblocks     
+        textblocks = self.original_textblocks
     
         for i in range(len(textblocks)):
             tb = textblocks[i].copy()
@@ -116,7 +123,7 @@ class TextBlockProcessor():
             else:
                 self.singles.update({i:tb})
 
-        self.grouped_textblocks = list(self.matches.values())
+        self.grouped_boxes = list(self.matches.values())
 
 
 
@@ -133,4 +140,4 @@ class TextBlockProcessor():
                     cnt = 1
             
             if cnt >0:
-                grouped_textblocks.append(self.singles[s])
+                self.grouped_boxes.append(self.singles[s])

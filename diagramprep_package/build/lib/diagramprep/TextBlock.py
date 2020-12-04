@@ -68,18 +68,20 @@ class TextBlock():
     def merge(other):
       Merge self with other TextBlock
   """
-  
+  text:str = ""
+  boudningbox:[] = []
+
   def __init__(self,text, boundingbox):
     self.text = text
     self.boundingbox = boundingbox
-    self.topleft_x = int(boundingbox[0]['x'])
-    self.topleft_y = int(boundingbox[0]['y'])
-    self.topright_x = int(boundingbox[1]['x'])
-    self.topright_y = int(boundingbox[1]['y'])
-    self.bottomright_x = int(boundingbox[2]['x'])
-    self.bottomright_y = int(boundingbox[2]['y'])
-    self.bottomleft_x = int(boundingbox[3]['x'])
-    self.bottomleft_y = int(boundingbox[3]['y'])
+    self.topleft_x = int(boundingbox[0])#['x'])
+    self.topleft_y = int(boundingbox[1])#['y'])
+    self.topright_x = int(boundingbox[2])#['x'])
+    self.topright_y = int(boundingbox[3])#['y'])
+    self.bottomright_x = int(boundingbox[4])#['x'])
+    self.bottomright_y = int(boundingbox[5])#['y'])
+    self.bottomleft_x = int(boundingbox[6])#['x'])
+    self.bottomleft_y = int(boundingbox[7])#['y'])
     self.x = self.topleft_x 
     self.y = self.topleft_y
     self.w = abs(self.topright_x - self.topleft_x)
@@ -110,12 +112,21 @@ class TextBlock():
     """
 
     bounds = []
-    bounds.append({"x":min(self.topleft_x,other.topleft_x),"y":min(self.topleft_y,other.topleft_y)})
-    bounds.append({"x":max(self.topright_x,other.topright_x),"y":min(self.topright_y,other.topright_y)})
-    bounds.append({"x":max(self.bottomright_x,other.bottomright_x),"y":max(self.bottomright_y,other.bottomright_y)})
-    bounds.append({"x":min(self.bottomleft_x,other.bottomleft_x),"y":max(self.bottomleft_y,other.bottomleft_y)})
+    #bounds.append({"x":min(self.topleft_x,other.topleft_x),"y":min(self.topleft_y,other.topleft_y)})
+    #bounds.append({"x":max(self.topright_x,other.topright_x),"y":min(self.topright_y,other.topright_y)})
+    #bounds.append({"x":max(self.bottomright_x,other.bottomright_x),"y":max(self.bottomright_y,other.bottomright_y)})
+    #bounds.append({"x":min(self.bottomleft_x,other.bottomleft_x),"y":max(self.bottomleft_y,other.bottomleft_y)})
+    bounds.append(min(self.topleft_x,other.topleft_x))
+    bounds.append(min(self.topleft_y,other.topleft_y))
+    bounds.append(max(self.topright_x,other.topright_x))
+    bounds.append(min(self.topright_y,other.topright_y))
 
-    
+    bounds.append(max(self.bottomright_x,other.bottomright_x))
+    bounds.append(max(self.bottomright_y,other.bottomright_y))
+    bounds.append(min(self.bottomleft_x,other.bottomleft_x))
+    bounds.append(max(self.bottomleft_y,other.bottomleft_y))
+
+
     ## Merge text top to bottom
     if(self.y <= other.y):
       txt = self.text + " " + other.text
