@@ -56,10 +56,12 @@ class PidImageProcessor():
                 hough_blurLevel:int=5,
                 hough_blurSigmaX:int=3,
                 hough_dilate_iter=5,
+                hough_kernel:() = (2,2),
                 circle_index:int=-1,
                 ocr_image:bool=True,
                 prep_kernel:[]= np.ones((3,3), np.uint8),
-                kernel_sharpening=np.array([[-1,-1,-1], [-1, 15,-1],[-1,-1,-1]]) ):
+                kernel_sharpening=np.array([[-1,-1,-1], [-1, 15,-1],[-1,-1,-1]]),
+                tess_config:str='--psm 6' ):
       
         self.hough_dp = hough_dp
         self.hough_minDist = hough_minDist
@@ -71,6 +73,7 @@ class PidImageProcessor():
         self.hough_blurLevel=hough_blurLevel
         self.hough_dilate_iter = hough_dilate_iter
         self.hough_blurSigmaX = hough_blurSigmaX
+        self.hough_kernel = hough_kernel
 
         self.pidImage.debugImages = []
         self.pidImage.diagramCircles = []
@@ -92,7 +95,7 @@ class PidImageProcessor():
                 print("Matched Circle Prep--- %s seconds ---" % (time.time() - start_time))
 
                 if self.ocr_image ==True:
-                    self.__ocr_circles(circle_index)
+                    self.__ocr_circles(tess_config,circle_index)
         else:
             raise RuntimeError('PidImage has no Image set')
 
@@ -101,7 +104,7 @@ class PidImageProcessor():
     def __contour_match(self):    
         orig = self.pidImage.image.copy()   
         img2 = orig.copy() 
-        kernel = np.ones((2,2), np.uint8) 
+        kernel = np.ones(self.hough_kernel, np.uint8) 
 
         img2 = cv2.GaussianBlur(img2, (self.hough_blurLevel,self.hough_blurLevel), self.hough_blurSigmaX)
         #img2 = cv2.erode(img2, kernel, iterations=5)
@@ -201,10 +204,10 @@ class PidImageProcessor():
             cv2.drawContours(img, [c], -1, (255,255,255), 5)
         return img
 
-    def __ocr_circles(self, circle_index=-1):
+    def __ocr_circles(self, tess_config,circle_index=-1):
         if circle_index == -1:
             for dc in self.pidImage.diagramCircles:
-                dc.text = ocr.get_text_from_img(dc.image)
+                dc.text = ocr.get_text_from_img(dc.image,tess_config)
         else:
             dc = self.pidImage.diagramCircles[circle_index]
-            dc.text = ocr.get_text_from_img(dc.image)
+            dc.text = ocr.get_text_from_img(dc.image,tess_config)

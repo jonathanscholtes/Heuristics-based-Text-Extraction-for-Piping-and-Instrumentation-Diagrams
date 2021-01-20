@@ -26,10 +26,10 @@ import pytesseract
 
 class Ocr:
 
-    def get_text_from_img(img,remove_special_chars:bool=True,hyphen_new_line:bool=True) -> str:
+    def get_text_from_img(img,remove_special_chars:bool=True,hyphen_new_line:bool=True, tess_config:str='--psm 6') -> str:
 
         #--oem 1 --psm 3 -l eng --oem 1 ''
-        txt = pytesseract.image_to_string(img,lang='eng',config='--psm 6')
+        txt = pytesseract.image_to_string(img,lang='eng',config=tess_config)
 
         
         ### old if re.search("^[a-zA-Z]+\\n[0-9_]+$",txt) != None:
